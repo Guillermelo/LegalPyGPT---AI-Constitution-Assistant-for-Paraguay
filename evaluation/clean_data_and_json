@@ -1,0 +1,39 @@
+import re
+import json
+
+# Function to load the raw text from the constitution file
+def load_raw_text(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return file.read()
+
+# Load the constitution text once
+raw_text = load_raw_text('data/raw/constitution_paraguay.txt')
+
+# Function to extract each article cleanly
+def extract_articles(text):
+    # Regex captures each 'ARTICULO' block until it hits a new article or TITULO/CAPITULO/SECCION
+    pattern = r"(ARTICULO\s+\d+\s+-.*?)(?=ARTICULO\s+\d+|TITULO\s+[IVXLC]+|CAPITULO\s+[IVXLC]+|SECCION\s+[IVXLC]+|\Z)"
+    matches = re.findall(pattern, text, re.DOTALL)
+    return matches
+
+# Extract articles
+articles = extract_articles(raw_text)
+print(f"Total articles extracted: {len(articles)}")
+
+# Create the dataset as a list of Q&A pairs
+dataset = []
+for article_text in articles:
+    # Extract the article number using regex
+    match = re.search(r'ARTICULO\s+(\d+)', article_text)
+    if match:
+        article_number = match.group(1)
+        # Create the prompt and completion format
+        prompt = f"What does Article {article_number} of the Paraguayan Constitution say?"
+        completion = article_text.strip().replace('\n', ' ')
+        dataset.append({"prompt": prompt, "completion": completion})
+
+# Save the dataset as a JSONL file for fine-tuning
+with open('data/processed/constitution_dataset.jsonl', 'w', encoding='utf-8') as jsonl_file:
+    for entry in dataset:
+        json.dump(entry, jsonl_file)
+        jsonl_file.write('\n') 

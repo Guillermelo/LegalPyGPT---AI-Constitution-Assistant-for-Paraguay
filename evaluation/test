@@ -1,0 +1,22 @@
+# utils.py
+import re
+
+# Function to load the raw constitution text
+def load_raw_text(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return file.read()
+
+raw_text = load_raw_text('data/raw/constitution_paraguay.txt')
+#print(raw_text[:1000])  # Print the first 1000 characters to inspect the content
+
+
+
+# Function to extract articles based on the pattern "Artículo N - ..."
+def extract_articles(text):
+    pattern = r"(Artículo\s+\d+.*?)(?=Artículo\s+\d+|\Z)"  # Capture from 'Artículo N' to next 'Artículo' or EOF
+    articles = re.findall(pattern, text, re.DOTALL)
+    return articles
+
+articles = extract_articles(raw_text)
+print(f"Total Articles Extracted: {len(articles)}")
+print(articles[0])  # Print the first extracted article

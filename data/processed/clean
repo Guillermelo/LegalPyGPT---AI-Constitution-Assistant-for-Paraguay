@@ -1,0 +1,22 @@
+import json
+from test2 import extract_articles
+
+
+articles = extract_articles(raw_text)
+print(f"Total articles extracted: {len(articles)}")
+
+dataset = []
+for article_text in articles:
+    # Extract the article number for the question
+    match = re.search(r'ARTICULO\s+(\d+)', article_text)
+    if match:
+        article_number = match.group(1)
+        prompt = f"What does Article {article_number} of the Paraguayan Constitution say?"
+        completion = article_text.strip().replace('\n', ' ')
+        dataset.append({"prompt": prompt, "completion": completion})
+
+# Save dataset to JSONL
+with open('data/processed/constitution_dataset.jsonl', 'w', encoding='utf-8') as jsonl_file:
+    for entry in dataset:
+        json.dump(entry, jsonl_file)
+        jsonl_file.write('\n')
